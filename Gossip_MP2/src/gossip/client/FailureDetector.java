@@ -14,14 +14,15 @@ public class FailureDetector implements Runnable {
 	private static long CLEAN_UP_TIME; // how long to wait until we are able to remove computer from table
 	ArrayList<HeartBeat> heartBeatTable;
 	Log logger;
-
+	private int id;
 	/**
 	 * Constructor
 	 */
-	public FailureDetector(ArrayList<HeartBeat> heartBeatTable, Log logger) {
+	public FailureDetector(ArrayList<HeartBeat> heartBeatTable, Log logger, int id) {
 		CLEAN_UP_TIME = WAIT_TIME * 2;
 		this.heartBeatTable = heartBeatTable;
 		this.logger = logger;
+		this.id = id;
 	}
 
 	/**
@@ -32,12 +33,17 @@ public class FailureDetector implements Runnable {
 		while (true) {
 			try {
 				Thread.sleep(WAIT_TIME);
+				
 				long currentTime = System.currentTimeMillis();
 
 				for (HeartBeat hb : heartBeatTable) {
-					checkForFailure(hb, currentTime);
-					if (hb.getFailed()) {
-						cleanUp(hb, currentTime);
+					if(hb.getID()==this.id){
+						this.updateSelf(hb);
+					} else {
+						checkForFailure(hb, currentTime);
+						if (hb.getFailed()) {
+							cleanUp(hb, currentTime);
+						}
 					}
 				}
 
@@ -62,6 +68,13 @@ public class FailureDetector implements Runnable {
 
 	}
 
+	/**
+	 * update own counter
+	 */
+	public void updateSelf(HeartBeat hb){
+		hb.setAndCompareHeartBetCounter(hb.getHeartBeatCounter()+1);
+	}
+	
 	/**
 	 * Checks for failure
 	 * 
