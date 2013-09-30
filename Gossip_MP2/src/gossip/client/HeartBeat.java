@@ -1,8 +1,14 @@
 package gossip.client;
 
 import java.io.Serializable;
+import java.sql.Time;
 
 public class HeartBeat implements Serializable {
+
+	/**
+	 * Serial Version ID
+	 */
+	private static final long serialVersionUID = 1L;
 
 	private String ipAddress;
 	private long heartBeatCounter;
@@ -12,15 +18,18 @@ public class HeartBeat implements Serializable {
 
 	/**
 	 * Constructor
+	 * 
 	 * @param ID
 	 */
-	public HeartBeat(int id){
-		this.id = id;
+	public HeartBeat(String ip) {
+		this.ipAddress = ip;
+		heartBeatCounter = 0;
+		localTime = System.currentTimeMillis();
 	}
-	
-	
+
 	/**
 	 * gets the heart beat counter
+	 * 
 	 * @return
 	 */
 	public long getHeartBeatCounter() {
@@ -30,12 +39,13 @@ public class HeartBeat implements Serializable {
 	/**
 	 * Sets the computer as failed
 	 */
-	public void setFailed(){
+	public void setFailed() {
 		failed = true;
 	}
-	
+
 	/**
 	 * gets the IP address that this heart beat belongs to
+	 * 
 	 * @return
 	 */
 	public String getIpAddress() {
@@ -44,6 +54,7 @@ public class HeartBeat implements Serializable {
 
 	/**
 	 * Gets the local time
+	 * 
 	 * @return
 	 */
 	public long getLocalTime() {
@@ -53,31 +64,32 @@ public class HeartBeat implements Serializable {
 	/**
 	 * Updates the local time
 	 */
-	public void updateLocalTime(){
+	public void updateLocalTime() {
 		this.localTime = System.currentTimeMillis();
 	}
-	
+
 	/**
 	 * Updates the heart beat counter only if the other heart beat is greater
+	 * 
 	 * @param otherHeartBeat
 	 */
-	public void setAndCompareHeartBetCounter(long otherHeartBeat){
-		if(otherHeartBeat > this.heartBeatCounter){
+	public void setAndCompareHeartBeatCounter(long otherHeartBeat) {
+		if (otherHeartBeat > this.heartBeatCounter) {
 			this.heartBeatCounter = otherHeartBeat;
 		}
 	}
-	
+
 	/**
 	 * Gets the status of failure
 	 */
-	public boolean getFailed(){
+	public boolean getFailed() {
 		return this.failed;
 	}
-	
+
 	/**
 	 * Gets the ID
 	 */
-	public int getID(){
+	public int getID() {
 		return this.id;
 	}
 }
