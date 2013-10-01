@@ -1,6 +1,8 @@
 package gossip.client;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
@@ -13,7 +15,7 @@ import java.util.List;
 
 public class ClientHeartBeatSender implements Runnable {
 
-	public static final String FIXEDNODE = "10.0.0.13";
+	private static final String IpAddressList = "/tmp/IpAddressList.txt";
 	public static final int PORT = 5989;
 
 	Log logger;
@@ -21,20 +23,25 @@ public class ClientHeartBeatSender implements Runnable {
 	/**
 	 * Constructor
 	 * 
-	 * @throws UnknownHostException
+	 * @throws IOException
 	 */
-	public ClientHeartBeatSender(Log logger) throws UnknownHostException {
+	@SuppressWarnings("resource")
+	public ClientHeartBeatSender(Log logger) throws IOException {
 		// joinGroup();
 		this.logger = logger;
-		// HeartBeat he = new HeartBeat(InetAddress.getLocalHost().toString());
-		HeartBeat he = new HeartBeat("172.16.170.101");
-		Client.heartBeatList.add(he);
+		BufferedReader br = new BufferedReader(new FileReader(IpAddressList));
+		String ipString = "";
+		while ((ipString = br.readLine()) != null) {
+			HeartBeat he = new HeartBeat(ipString);
+			Client.heartBeatList.add(he);
+		}
 	}
 
 	public void startGossip() {
 		while (true) {
 			try {
-				Thread.sleep(Client.WAIT_TIME);
+				//Wait time should decrease with increasing list size
+				Thread.sleep(Client.WAIT_TIME / Client.heartBeatList.size());
 			} catch (InterruptedException e) {
 				System.out.println("There was an error sleeping!");
 				e.printStackTrace();
@@ -64,25 +71,22 @@ public class ClientHeartBeatSender implements Runnable {
 
 			DatagramSocket clientSocket;
 			try {
+				System.out.println("Sending Gossip to: " + ip);
 				clientSocket = new DatagramSocket();
-
 				InetAddress ipAddress = InetAddress.getByName(ip);
-
 				byte[] sendData = new byte[1024];
-
-				ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-				ObjectOutputStream objectStream = new ObjectOutputStream(
-						byteStream);
-
-				objectStream.writeObject(Client.heartBeatList);
-				sendData = byteStream.toByteArray();
 				// Update self heart beat counter before sending the packet
 				for (HeartBeat hb : Client.heartBeatList) {
 					if (hb.getIpAddress().equals(
-							InetAddress.getLocalHost().toString())) {
+							InetAddress.getLocalHost().getHostAddress())) {
 						this.updateSelf(hb);
 					}
+					ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+					ObjectOutputStream objectStream = new ObjectOutputStream(
+							byteStream);
 
+					objectStream.writeObject(Client.heartBeatList);
+					sendData = byteStream.toByteArray();
 					// Send Gossip
 					DatagramPacket sendPacket = new DatagramPacket(sendData,
 							sendData.length, ipAddress, PORT);

@@ -1,5 +1,6 @@
 package gossip.client;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ public class Client {
 		this.logger = logger;
 	}
 
-	public void start() throws UnknownHostException {
+	public void start() throws IOException {
 		Thread listenerThread = new Thread(new ServerHeartBeatListener(logger));
 		listenerThread.start();
 		Thread senderThread = new Thread(new ClientHeartBeatSender(logger));
@@ -37,29 +38,46 @@ public class Client {
 		// TODOs
 		synchronized (Client.heartBeatList) {
 
-			long currentTime = System.currentTimeMillis();
-			boolean nodeFound = false;
-			for (HeartBeat receivedHb : ReceivedList) {
+			for (HeartBeat hbLocal : heartBeatList) {
 				// Nodes other than local host
-				if (receivedHb.getIpAddress() != (InetAddress.getLocalHost()
-						.toString())) {
-					for (HeartBeat hbLocal : heartBeatList) {
+				if (hbLocal.getIpAddress() != (InetAddress.getLocalHost()
+						.getHostAddress())) {
+					for (HeartBeat receivedHb : ReceivedList) {
 						// Update Hb Counter if IPAddress matches local list
 						if (receivedHb.getIpAddress().equals(
 								hbLocal.getIpAddress())) {
-							nodeFound = true;
 							hbLocal.setAndCompareHeartBeatCounter(receivedHb
 									.getHeartBeatCounter());
+							// Check for failures if HeartBeat has not changed
+							if (!hbLocal.hasCounterValueChanged()) {
+								System.out
+										.println("Old HeartBeat received. Checking for failures.");
+								long currentTime = System.currentTimeMillis();
+								checkForFailure(hbLocal, currentTime);
+								if (hbLocal.getFailed()) {
+									cleanUp(hbLocal, currentTime);
+								}
+							}
 						}
 					}
-					if (!nodeFound) {
-						// add new node to local list
-						heartBeatList.add(receivedHb);
+				}
+			}
+			System.out.println("Checking for new nodes");
+			boolean nodeFound = false;
+			for (HeartBeat receivedHb : ReceivedList) {
+				for (HeartBeat hbLocal : heartBeatList) {
+					if (receivedHb.getIpAddress()
+							.equals(hbLocal.getIpAddress())) {
+						nodeFound = true;
 					}
 				}
-				checkForFailure(receivedHb, currentTime);
-				if (receivedHb.getFailed()) {
-					cleanUp(receivedHb, currentTime);
+				if (!nodeFound) {
+					// add new node to local list
+					System.out.println("New Node has joined: "
+							+ receivedHb.getIpAddress());
+					receivedHb.updateLocalTime();
+					heartBeatList.add(receivedHb);
+
 				}
 			}
 		}
@@ -87,6 +105,7 @@ public class Client {
 	 * @param currentTime
 	 */
 	private void checkForFailure(HeartBeat hb, long currentTime) {
+		System.out.println("Checking for Failure");
 		if (currentTime - hb.getLocalTime() >= WAIT_TIME) {
 			hb.setFailed();
 			System.out.println(Thread.currentThread().getName() + ": "
@@ -95,15 +114,18 @@ public class Client {
 		}
 
 	}
-	
-	
-	public static void main(String args[]){
-		Log logger = new Log("machine.test.log");
-		Client client = new Client(logger);
+
+	public static void main(String args[]) {
 		try {
+			Log logger = new Log("../machine."
+					+ InetAddress.getLocalHost().getHostAddress() + ".log");
+			Client client = new Client(logger);
 			client.start();
 		} catch (UnknownHostException e) {
 			System.out.println("There was an error setting the host");
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.SocketAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
 
@@ -33,17 +32,16 @@ public class ServerHeartBeatListener implements Runnable {
 				DatagramPacket receivePacket = new DatagramPacket(receiveData,
 						receiveData.length);
 				serverSocket.receive(receivePacket);
-				String sentence = new String(receivePacket.getData());
-				System.out.println("RECEIVED: " + sentence + ":END");
-
+				receivePacket.getData();
 				// Get local list
 				ObjectInputStream objectStream = new ObjectInputStream(
 						new ByteArrayInputStream(receivePacket.getData()));
-
 				Object readObject = objectStream.readObject();
 				if (readObject instanceof ArrayList<?>) {
 					ArrayList<HeartBeat> hbList = (ArrayList<HeartBeat>) readObject;
-
+					System.out.println("Received list from: "
+							+ receivePacket.getAddress().getHostAddress()
+							+ ". List size: " + hbList.size());
 					// Update local list
 					Client clientObject = new Client(logger);
 					clientObject.updateCounter(hbList);

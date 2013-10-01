@@ -1,7 +1,6 @@
 package gossip.client;
 
 import java.io.Serializable;
-import java.sql.Time;
 
 public class HeartBeat implements Serializable {
 
@@ -14,7 +13,7 @@ public class HeartBeat implements Serializable {
 	private long heartBeatCounter;
 	private long localTime;
 	private boolean failed = false;
-	private int id = 0;
+	private boolean CounterValueHasChanged = false;
 
 	/**
 	 * Constructor
@@ -75,6 +74,9 @@ public class HeartBeat implements Serializable {
 	 */
 	public void setAndCompareHeartBeatCounter(long otherHeartBeat) {
 		if (otherHeartBeat > this.heartBeatCounter) {
+			this.CounterValueHasChanged = true;
+			// Should update the local Time here along with heartbeat
+			this.updateLocalTime();
 			this.heartBeatCounter = otherHeartBeat;
 		}
 	}
@@ -86,10 +88,7 @@ public class HeartBeat implements Serializable {
 		return this.failed;
 	}
 
-	/**
-	 * Gets the ID
-	 */
-	public int getID() {
-		return this.id;
+	public boolean hasCounterValueChanged() {
+		return CounterValueHasChanged;
 	}
 }
