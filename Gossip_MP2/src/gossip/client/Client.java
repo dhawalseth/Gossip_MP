@@ -140,6 +140,7 @@ public class Client {
 	}
 
 	public static void main(String args[]) {
+		
 		try {
 			Log logger = new Log("../machine."
 					+ InetAddress.getLocalHost().getHostAddress() + ".log");
