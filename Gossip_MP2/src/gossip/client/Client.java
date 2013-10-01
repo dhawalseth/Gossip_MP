@@ -15,7 +15,7 @@ public class Client {
 	public static ArrayList<HeartBeat> heartBeatList = new ArrayList<HeartBeat>(); // Local
 																					// membership
 																					// list
-	private static long WAIT_TIME = 1000; // how long until a computer will be
+	public static long WAIT_TIME = 1000; // how long until a computer will be
 	// marked as failed
 	private static long CLEAN_UP_TIME; // how long to wait until we are able to
 
@@ -94,5 +94,17 @@ public class Client {
 			logger.writeLogMessage("");
 		}
 
+	}
+	
+	
+	public static void main(String args[]){
+		Log logger = new Log("machine.test.log");
+		Client client = new Client(logger);
+		try {
+			client.start();
+		} catch (UnknownHostException e) {
+			System.out.println("There was an error setting the host");
+			e.printStackTrace();
+		}
 	}
 }
