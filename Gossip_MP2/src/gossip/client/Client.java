@@ -33,6 +33,11 @@ public class Client {
 		senderThread.start();
 	}
 
+	/**
+	 * Updates the counters in the heart beat list when given the received list
+	 * @param ReceivedList
+	 * @throws UnknownHostException
+	 */
 	public void updateCounter(ArrayList<HeartBeat> ReceivedList)
 			throws UnknownHostException {
 		// TODOs
@@ -44,41 +49,60 @@ public class Client {
 						.getHostAddress())) {
 					for (HeartBeat receivedHb : ReceivedList) {
 						// Update Hb Counter if IPAddress matches local list
-						if (receivedHb.getIpAddress().equals(
-								hbLocal.getIpAddress())) {
-							hbLocal.setAndCompareHeartBeatCounter(receivedHb
-									.getHeartBeatCounter());
-							// Check for failures if HeartBeat has not changed
-							if (!hbLocal.hasCounterValueChanged()) {
-								System.out
-										.println("Old HeartBeat received. Checking for failures.");
-								long currentTime = System.currentTimeMillis();
-								checkForFailure(hbLocal, currentTime);
-								if (hbLocal.getFailed()) {
-									cleanUp(hbLocal, currentTime);
-								}
-							}
-						}
+						_updateAndCompareHeartBeats(hbLocal, receivedHb);
 					}
 				}
 			}
-			System.out.println("Checking for new nodes");
-			boolean nodeFound = false;
-			for (HeartBeat receivedHb : ReceivedList) {
-				for (HeartBeat hbLocal : heartBeatList) {
-					if (receivedHb.getIpAddress()
-							.equals(hbLocal.getIpAddress())) {
-						nodeFound = true;
-					}
-				}
-				if (!nodeFound) {
-					// add new node to local list
-					System.out.println("New Node has joined: "
-							+ receivedHb.getIpAddress());
-					receivedHb.updateLocalTime();
-					heartBeatList.add(receivedHb);
+			_findNewNodes(ReceivedList);
+		}
+	}
 
+	/**
+	 * Given a local heart beat and received heart beat, this function updates
+	 * the value if they refer to the same computer.
+	 * 
+	 * @param hbLocal
+	 * @param receivedHb
+	 */
+	private void _updateAndCompareHeartBeats(HeartBeat hbLocal,
+			HeartBeat receivedHb) {
+		if (receivedHb.getIpAddress().equals(hbLocal.getIpAddress())) {
+			hbLocal.setAndCompareHeartBeatCounter(receivedHb
+					.getHeartBeatCounter());
+			// Check for failures if HeartBeat has not changed
+			if (!hbLocal.hasCounterValueChanged()) {
+				System.out
+						.println("Old HeartBeat received. Checking for failures.");
+				long currentTime = System.currentTimeMillis();
+				checkForFailure(hbLocal, currentTime);
+				if (hbLocal.getFailed()) {
+					cleanUp(hbLocal, currentTime);
 				}
+			}
+		}
+	}
+
+	/**
+	 * Finds new nodes and adds it to the heart beat list
+	 * 
+	 * @param ReceivedList
+	 */
+	private void _findNewNodes(ArrayList<HeartBeat> ReceivedList) {
+		System.out.println("Checking for new nodes");
+		boolean nodeFound = false;
+		for (HeartBeat receivedHb : ReceivedList) {
+			for (HeartBeat hbLocal : heartBeatList) {
+				if (receivedHb.getIpAddress().equals(hbLocal.getIpAddress())) {
+					nodeFound = true;
+				}
+			}
+			if (!nodeFound) {
+				// add new node to local list
+				System.out.println("New Node has joined: "
+						+ receivedHb.getIpAddress());
+				receivedHb.updateLocalTime();
+				heartBeatList.add(receivedHb);
+
 			}
 		}
 	}
