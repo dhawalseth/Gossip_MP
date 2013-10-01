@@ -35,6 +35,7 @@ public class Client {
 
 	/**
 	 * Updates the counters in the heart beat list when given the received list
+	 * 
 	 * @param ReceivedList
 	 * @throws UnknownHostException
 	 */
@@ -45,8 +46,8 @@ public class Client {
 
 			for (HeartBeat hbLocal : heartBeatList) {
 				// Nodes other than local host
-				if (hbLocal.getIpAddress() != (InetAddress.getLocalHost()
-						.getHostAddress())) {
+				if (!hbLocal.getIpAddress().equals(
+						InetAddress.getLocalHost().getHostAddress())) {
 					for (HeartBeat receivedHb : ReceivedList) {
 						// Update Hb Counter if IPAddress matches local list
 						_updateAndCompareHeartBeats(hbLocal, receivedHb);
@@ -66,13 +67,15 @@ public class Client {
 	 */
 	private void _updateAndCompareHeartBeats(HeartBeat hbLocal,
 			HeartBeat receivedHb) {
-		if (receivedHb.getIpAddress().equals(hbLocal.getIpAddress())) {
+		if (hbLocal.getIpAddress().equals(receivedHb.getIpAddress())) {
+			System.out.println("Comparing hb. Rec:" + receivedHb.getIpAddress()
+					+ " with localhb " + hbLocal.getIpAddress());
 			hbLocal.setAndCompareHeartBeatCounter(receivedHb
 					.getHeartBeatCounter());
 			// Check for failures if HeartBeat has not changed
 			if (!hbLocal.hasCounterValueChanged()) {
-				System.out
-						.println("Old HeartBeat received. Checking for failures.");
+				System.out.println("Old HeartBeat received for "
+						+ hbLocal.getIpAddress() + ". Checking for failures.");
 				long currentTime = System.currentTimeMillis();
 				checkForFailure(hbLocal, currentTime);
 				if (hbLocal.getFailed()) {
@@ -89,20 +92,24 @@ public class Client {
 	 */
 	private void _findNewNodes(ArrayList<HeartBeat> ReceivedList) {
 		System.out.println("Checking for new nodes");
-		boolean nodeFound = false;
 		for (HeartBeat receivedHb : ReceivedList) {
+			boolean nodeFound = false;
 			for (HeartBeat hbLocal : heartBeatList) {
 				if (receivedHb.getIpAddress().equals(hbLocal.getIpAddress())) {
+					System.out
+							.println("In localist: " + hbLocal.getIpAddress());
 					nodeFound = true;
 				}
 			}
 			if (!nodeFound) {
 				// add new node to local list
-				System.out.println("New Node has joined: "
+				System.out.println("Found New Node: "
 						+ receivedHb.getIpAddress());
 				receivedHb.updateLocalTime();
 				heartBeatList.add(receivedHb);
 
+			} else {
+				System.out.println("No new node in the received List.");
 			}
 		}
 	}
@@ -140,9 +147,9 @@ public class Client {
 	}
 
 	public static void main(String args[]) {
-		
+
 		try {
-			Log logger = new Log("../machine."
+			Log logger = new Log("/tmp/machine."
 					+ InetAddress.getLocalHost().getHostAddress() + ".log");
 			Client client = new Client(logger);
 			client.start();

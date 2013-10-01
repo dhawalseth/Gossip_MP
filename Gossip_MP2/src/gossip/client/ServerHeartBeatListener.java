@@ -60,7 +60,6 @@ public class ServerHeartBeatListener implements Runnable {
 		}
 	}
 
-	@Override
 	public void run() {
 		receiveGossip();
 	}

@@ -74,6 +74,7 @@ public class HeartBeat implements Serializable {
 	 */
 	public void setAndCompareHeartBeatCounter(long otherHeartBeat) {
 		if (otherHeartBeat > this.heartBeatCounter) {
+			System.out.println("Inside counter set and compare.");
 			this.CounterValueHasChanged = true;
 			// Should update the local Time here along with heartbeat
 			this.updateLocalTime();

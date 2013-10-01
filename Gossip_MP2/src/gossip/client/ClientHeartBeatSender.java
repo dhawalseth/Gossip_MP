@@ -29,6 +29,11 @@ public class ClientHeartBeatSender implements Runnable {
 	public ClientHeartBeatSender(Log logger) throws IOException {
 		// joinGroup();
 		this.logger = logger;
+		// Adding self in local list
+		HeartBeat selfHb = new HeartBeat(InetAddress.getLocalHost()
+				.getHostAddress());
+		Client.heartBeatList.add(selfHb);
+		// Taking from txt file
 		BufferedReader br = new BufferedReader(new FileReader(IpAddressList));
 		String ipString = "";
 		while ((ipString = br.readLine()) != null) {
@@ -37,11 +42,12 @@ public class ClientHeartBeatSender implements Runnable {
 		}
 	}
 
-	public void startGossip() {
+	public void startGossip() throws UnknownHostException {
 		while (true) {
 			try {
-				//Wait time should decrease with increasing list size
-				Thread.sleep(Client.WAIT_TIME / Client.heartBeatList.size());
+				// Wait time should decrease with increasing list size
+				if (Client.heartBeatList.size() != 0)
+					Thread.sleep(Client.WAIT_TIME / Client.heartBeatList.size());
 			} catch (InterruptedException e) {
 				System.out.println("There was an error sleeping!");
 				e.printStackTrace();
@@ -52,26 +58,28 @@ public class ClientHeartBeatSender implements Runnable {
 		}
 	}
 
-	public List<String> selectMember() {
-		// TODO: Add logic
+	public List<String> selectMember() throws UnknownHostException {
+		// TODO: Add logic. Rite now selecting all
 		List<String> memberList = new ArrayList<String>();
-		for (HeartBeat hb : Client.heartBeatList) {
-			memberList.add(hb.getIpAddress());
+		for (HeartBeat hbLocal : Client.heartBeatList) {
+			if (!hbLocal.getIpAddress().equals(
+					InetAddress.getLocalHost().getHostAddress())) {
+				memberList.add(hbLocal.getIpAddress());
+			}
 		}
 		return memberList;
 
 	}
-
-	// public void joinGroup() {
-	// sendGossip(FIXEDNODE);
-	// }
 
 	public void sendGossip(String ip) {
 		synchronized (Client.heartBeatList) {
 
 			DatagramSocket clientSocket;
 			try {
-				System.out.println("Sending Gossip to: " + ip);
+				System.out
+						.println("Sending Gossip to: " + ip
+								+ ". Current List size: "
+								+ Client.heartBeatList.size());
 				clientSocket = new DatagramSocket();
 				InetAddress ipAddress = InetAddress.getByName(ip);
 				byte[] sendData = new byte[1024];
@@ -113,9 +121,13 @@ public class ClientHeartBeatSender implements Runnable {
 		hb.setAndCompareHeartBeatCounter(hb.getHeartBeatCounter() + 1);
 	}
 
-	@Override
 	public void run() {
-		startGossip();
+		try {
+			startGossip();
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }
