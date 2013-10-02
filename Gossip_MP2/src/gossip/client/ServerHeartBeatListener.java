@@ -11,13 +11,13 @@ import java.util.ArrayList;
 public class ServerHeartBeatListener implements Runnable {
 
 	public static final int PORT = 5989;
-	Log logger;
+	private HeartBeatTable table;
 
 	/**
 	 * Constructor
 	 */
-	public ServerHeartBeatListener(Log logger) {
-		this.logger = logger;
+	public ServerHeartBeatListener(HeartBeatTable table) {
+		this.table = table;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -43,20 +43,18 @@ public class ServerHeartBeatListener implements Runnable {
 							+ receivePacket.getAddress().getHostAddress()
 							+ ". List size: " + hbList.size());
 					// Update local list
-					Client clientObject = new Client(logger);
-					clientObject.updateCounter(hbList);
-
+					table.updateTable(hbList);
 				}
 			}
 		} catch (SocketException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			
 		}
 	}
 

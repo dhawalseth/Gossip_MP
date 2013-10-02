@@ -1,6 +1,9 @@
 package gossip.client;
 
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 
 /**
@@ -27,11 +30,13 @@ public class Log {
 	public void writeLogMessage(String message){
 
 		try {
-			PrintWriter out = new PrintWriter(this.filename);
+			PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(this.filename, true)));
 			out.println(System.currentTimeMillis() + " : " + message);
 			out.close();
 		} catch (FileNotFoundException e) {
 			System.out.println("There was an error writing to the log");
+			e.printStackTrace();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	
