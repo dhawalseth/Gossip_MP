@@ -1,6 +1,7 @@
 package gossip.heartbeat;
 
 import gossip.main.Log;
+import java.sql.Timestamp;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -78,8 +79,8 @@ public class HeartBeatTable {
 		if (!this.heartBeatMap.containsKey(key)) {// check if new node
 			this.heartBeatMap.put(key, value);
 			this.localTimeMap.put(key, System.currentTimeMillis());
-			logger.writeLogMessage("ADD " + key + " incarnation# " + hb.getIncarnationNumber());
-			System.out.println("Added ip: "+ key + " incarnation#: "+hb.getIncarnationNumber());
+			logger.writeLogMessage("ADD " + key + " incarnation# " + hb.getTimeStamp());
+			System.out.println("Added ip: "+ key + " incarnation#: "+hb.getTimeStamp());
 		} else {
 			HeartBeat old = this.heartBeatMap.get(key);// merge new values
 			if (old.getHeartBeatCounter() < value.getHeartBeatCounter()) {
@@ -182,7 +183,7 @@ public class HeartBeatTable {
 	}
 
 	public void reincarnate() {
-		own.increaseIncarnationNumber();
+		own.setIncarnationTimeStamp();
 		this.setupMaps(own);
 	}
 
@@ -227,12 +228,12 @@ public class HeartBeatTable {
 	}
 
 	public String getTableStateAsString() {
-		String retVal = "(ip,heart beat count,incarnation#)\n";
+		String retVal = "(ip,heart beat count,incarnationTimeStamp#): ";
 		ArrayList<HeartBeat> hbTable = this.getCurrentHeartBeatTable();
 		for (HeartBeat hb : hbTable) {
 			String ipAddress = hb.getIpAddress();
 			Long hbCount = hb.getHeartBeatCounter();
-			int incarnNum = hb.getIncarnationNumber();
+			Timestamp incarnNum = hb.getTimeStamp();
 			retVal += "(" + ipAddress + " , " + hbCount + " , " + incarnNum
 					+ " )\n";
 		}

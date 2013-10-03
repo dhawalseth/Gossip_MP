@@ -1,8 +1,8 @@
 package gossip.tests;
 
 import static org.junit.Assert.assertTrue;
-import gossip.client.HeartBeat;
-import gossip.client.HeartBeatTable;
+import gossip.heartbeat.HeartBeat;
+import gossip.heartbeat.HeartBeatTable;
 
 import java.util.ArrayList;
 

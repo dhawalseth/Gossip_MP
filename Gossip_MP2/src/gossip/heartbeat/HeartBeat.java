@@ -1,6 +1,7 @@
 package gossip.heartbeat;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 
 public class HeartBeat implements Serializable {
 
@@ -11,7 +12,7 @@ public class HeartBeat implements Serializable {
 
 	private String ipAddress;
 	private long heartBeatCounter;
-	private int incarnationNumber;
+	private Timestamp timesStamp;
 
 	/**
 	 * Constructor
@@ -57,17 +58,16 @@ public class HeartBeat implements Serializable {
 	 * 
 	 * @return incarnation number
 	 */
-	public int increaseIncarnationNumber() {
-		return ++this.incarnationNumber;
+	public Timestamp setIncarnationTimeStamp() {
+		return this.timesStamp = new Timestamp(System.currentTimeMillis());
 	}
 
 	/**
-	 * Gets the incarnation number - Every time a computer joins the incarnation
-	 * number increases
+	 * Gets the timestamp when this heart beat object was created
 	 * 
 	 * @return
 	 */
-	public int getIncarnationNumber() {
-		return this.incarnationNumber;
+	public Timestamp getTimeStamp(){
+		return this.timesStamp;
 	}
 }
