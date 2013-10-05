@@ -18,15 +18,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ClientHeartBeatSender implements Runnable {
 
 	private static final String IpAddressList = "/tmp/IpAddressList.txt";
 	public static final int PORT = 5989;
 	// Packet loss rate: 1%, 5%, 15%, and 50%.
-	public static final int RATE = 50;
+	public AtomicInteger percentPacketloss = new AtomicInteger(0);
 	// Change this to true for enabling packetLoss
-	public static final boolean packetLoss = false;
+	public AtomicBoolean packetLoss = new AtomicBoolean(false);
 	public HeartBeatTable table;
 	private AtomicBoolean exit = new AtomicBoolean(false);
 
@@ -128,15 +129,12 @@ public class ClientHeartBeatSender implements Runnable {
 			objectStream.writeObject(sendList);
 			sendData = byteStream.toByteArray();
 
-			// Simulating packet loss rate: 1%, 5%, 15%, and 50%.
-			if (packetLoss) {
-				Random random = new Random();
-				int sendRate = random.nextInt(100);
-				if (sendRate < RATE) {
-					System.out.println("packet lost!!!");
-					return;
-				}
+			shouldDrop();
+			boolean shouldDrop = shouldDrop();
+			if(shouldDrop){
+				return;
 			}
+			
 			// Send Gossip
 			DatagramPacket sendPacket = new DatagramPacket(sendData,
 					sendData.length, ipAddress, PORT);
@@ -155,6 +153,25 @@ public class ClientHeartBeatSender implements Runnable {
 
 	}
 
+	private boolean shouldDrop() {
+		// Simulating packet loss rate: 1%, 5%, 15%, and 50%.
+		if (packetLoss.get()) {
+			Random random = new Random();
+			int sendRate = random.nextInt(100);
+			if (sendRate <= percentPacketloss.get()) {
+				System.out.println("packet lost!!!");
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public void setPacketLoss(boolean setPacketLoss, int packetLossPercent){
+		this.packetLoss.set(setPacketLoss);
+		this.percentPacketloss.set(packetLossPercent);
+	}
+	
+	
 	public void stopClient() {
 		this.exit.set(true);
 	}

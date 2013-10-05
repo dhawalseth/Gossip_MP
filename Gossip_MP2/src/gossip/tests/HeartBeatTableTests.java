@@ -13,7 +13,7 @@ public class HeartBeatTableTests {
 	@Test
 	public void testIncreaseOwnHeartBeat() {
 		HeartBeat own = new HeartBeat("0");
-		HeartBeatTable table = new HeartBeatTable(own);
+		HeartBeatTable table = new HeartBeatTable(own,null);
 		table.maintain();
 		assertTrue(own.getHeartBeatCounter()==1);
 	}
@@ -21,7 +21,7 @@ public class HeartBeatTableTests {
 	@Test
 	public void testServerMergeAdd() {
 		HeartBeat own = new HeartBeat("0");
-		HeartBeatTable table = new HeartBeatTable(own);
+		HeartBeatTable table = new HeartBeatTable(own,null);
 
 		ArrayList<HeartBeat> currentTable = setupTable(own,table);
 		
@@ -55,7 +55,7 @@ public class HeartBeatTableTests {
 	
 	public void testServerMerge(){
 		HeartBeat own = new HeartBeat("0");
-		HeartBeatTable table = new HeartBeatTable(own);
+		HeartBeatTable table = new HeartBeatTable(own,null);
 		ArrayList<HeartBeat> currentTable = setupTable(own,table);
 	
 		table.updateTable(currentTable);
@@ -88,7 +88,7 @@ public class HeartBeatTableTests {
 	@Test
 	public void testClientUpdateNoFailures() throws InterruptedException{
 		HeartBeat own = new HeartBeat("0");
-		HeartBeatTable table = new HeartBeatTable(own);
+		HeartBeatTable table = new HeartBeatTable(own,null);
 		ArrayList<HeartBeat> currentTable = setupTable(own,table);
 		table.updateTable(currentTable);
 		Thread.sleep(HeartBeatTable.WAIT_TIME/2);
@@ -108,7 +108,7 @@ public class HeartBeatTableTests {
 	@Test
 	public void testClientUpdateWithFailures() throws InterruptedException{
 		HeartBeat own = new HeartBeat("0");
-		HeartBeatTable table = new HeartBeatTable(own);
+		HeartBeatTable table = new HeartBeatTable(own,null);
 		ArrayList<HeartBeat> currentTable = setupTable(own,table);
 		table.updateTable(currentTable);
 		Thread.sleep(HeartBeatTable.WAIT_TIME);
