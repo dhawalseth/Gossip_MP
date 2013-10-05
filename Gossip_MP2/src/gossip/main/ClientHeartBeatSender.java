@@ -16,12 +16,17 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ClientHeartBeatSender implements Runnable {
 
 	private static final String IpAddressList = "/tmp/IpAddressList.txt";
 	public static final int PORT = 5989;
+	// Packet loss rate: 1%, 5%, 15%, and 50%.
+	public static final int RATE = 50;
+	// Change this to true for enabling packetLoss
+	public static final boolean packetLoss = false;
 	public HeartBeatTable table;
 	private AtomicBoolean exit = new AtomicBoolean(false);
 
@@ -93,7 +98,19 @@ public class ClientHeartBeatSender implements Runnable {
 			List<String> listOfReceivers = table.selectMembers(sendList);
 			// send
 			for (String ip : listOfReceivers) {
-				sendGossip(ip, sendList);
+				// approx limit of UDP packet = 65000. And aprrox size of
+				// HeartBeat is 20
+				if (sendList.size() > 3250) {
+					ArrayList<HeartBeat> splitSendList = new ArrayList<HeartBeat>();
+					// split
+					for (int i = 0; i < sendList.size() / 3250; i++) {
+						splitSendList.addAll(sendList.subList(i * 3250,
+								(i + 1) * 3250));
+						sendGossip(ip, splitSendList);
+					}
+				} else {
+					sendGossip(ip, sendList);
+				}
 			}
 		}
 	}
@@ -106,12 +123,20 @@ public class ClientHeartBeatSender implements Runnable {
 			InetAddress ipAddress = InetAddress.getByName(ip);
 			byte[] sendData = new byte[1024];
 
-			// Update self heart beat counter before sending the packet
 			ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
 			ObjectOutputStream objectStream = new ObjectOutputStream(byteStream);
 			objectStream.writeObject(sendList);
 			sendData = byteStream.toByteArray();
 
+			// Simulating packet loss rate: 1%, 5%, 15%, and 50%.
+			if (packetLoss) {
+				Random random = new Random();
+				int sendRate = random.nextInt(100);
+				if (sendRate < RATE) {
+					System.out.println("packet lost!!!");
+					return;
+				}
+			}
 			// Send Gossip
 			DatagramPacket sendPacket = new DatagramPacket(sendData,
 					sendData.length, ipAddress, PORT);
