@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class HeartBeatTable {
 
-	public final static long WAIT_TIME = 1000;
+	public final static long WAIT_TIME = 2000;
 	public final static long CLEAN_UP = 1000;
 	public final static int NUM_CONNECTIONS = 2;
 
@@ -52,11 +52,11 @@ public class HeartBeatTable {
 	}
 
 	/**
-	 * update table -the server should call this everytime it receives a list
+	 * update table -the server should call this every time it receives a list
 	 * 
 	 * @param receivedTable
 	 */
-	public synchronized void updateTable(ArrayList<HeartBeat> receivedTable) {
+	public void updateTable(ArrayList<HeartBeat> receivedTable) {
 		for (HeartBeat hb : receivedTable) {
 			updateTable(hb);
 		}
@@ -67,7 +67,7 @@ public class HeartBeatTable {
 	 * 
 	 * @param hb
 	 */
-	public synchronized void updateTable(HeartBeat hb) {
+	public void updateTable(HeartBeat hb) {
 
 		// we don't want to change our own heart beat
 		if (hb.getIpAddress() == this.own.getIpAddress()) {
@@ -94,7 +94,7 @@ public class HeartBeatTable {
 	/**
 	 * increases own heart beat
 	 */
-	public synchronized void increaseOwnHeartBeat() {
+	public void increaseOwnHeartBeat() {
 		long ownHeartBeat = own.getHeartBeatCounter();
 		own.setAndCompareHeartBeatCounter(ownHeartBeat + 1);
 		this.localTimeMap.put(own.getIpAddress(), System.currentTimeMillis());
@@ -105,7 +105,7 @@ public class HeartBeatTable {
 	 * 
 	 * @param hb
 	 */
-	public synchronized void removeHeartBeat(HeartBeat hb) {
+	public void removeHeartBeat(HeartBeat hb) {
 		String key = hb.getIpAddress();
 		this.heartBeatMap.remove(key);
 		this.hasFailedMap.remove(key);
@@ -117,7 +117,7 @@ public class HeartBeatTable {
 	 * 
 	 * @return ArrayList of heart beats
 	 */
-	public synchronized ArrayList<HeartBeat> maintain() {
+	public ArrayList<HeartBeat> maintain() {
 		increaseOwnHeartBeat();
 		checkForFailures();
 		cleanUp();
@@ -163,7 +163,7 @@ public class HeartBeatTable {
 	 * 
 	 * @return
 	 */
-	private synchronized ArrayList<HeartBeat> getCurrentHeartBeatTable() {
+	private ArrayList<HeartBeat> getCurrentHeartBeatTable() {
 		// return all heart beat values
 		ArrayList<HeartBeat> retVal = new ArrayList<HeartBeat>();
 		Collection<HeartBeat> collection = this.heartBeatMap.values();

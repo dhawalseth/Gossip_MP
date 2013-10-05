@@ -10,7 +10,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ServerHeartBeatListener implements Runnable {
 
@@ -37,7 +36,7 @@ public class ServerHeartBeatListener implements Runnable {
 						receiveData.length);
 				serverSocket.receive(receivePacket);
 				receivePacket.getData();
-				// Get local list
+				// Get list out of the Received packet
 				ObjectInputStream objectStream = new ObjectInputStream(
 						new ByteArrayInputStream(receivePacket.getData()));
 				Object readObject = objectStream.readObject();
@@ -46,7 +45,7 @@ public class ServerHeartBeatListener implements Runnable {
 					System.out.println("Received list from: "
 							+ receivePacket.getAddress().getHostAddress()
 							+ ". List size: " + hbList.size());
-					// Update local list
+					// Update local list with received list
 					table.updateTable(hbList);
 				}
 			}

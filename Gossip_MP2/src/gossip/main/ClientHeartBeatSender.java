@@ -24,9 +24,10 @@ public class ClientHeartBeatSender implements Runnable {
 	private static final String IpAddressList = "/tmp/IpAddressList.txt";
 	public static final int PORT = 5989;
 	// Packet loss rate: 1%, 5%, 15%, and 50%.
-	public static final int RATE = 50;
+	public static final int RATE = 5;
 	// Change this to true for enabling packetLoss
-	public static final boolean packetLoss = false;
+	public static final boolean packetLoss = true;
+	public static final int PACKETSIZE = 1024;
 	public HeartBeatTable table;
 	private AtomicBoolean exit = new AtomicBoolean(false);
 
@@ -50,10 +51,9 @@ public class ClientHeartBeatSender implements Runnable {
 	 * @throws IOException
 	 */
 	private void addAddressesFromText(HeartBeatTable table) {
-		// Taking from text file
 		BufferedReader br = null;
 		String ipString = "";
-
+		// Taking from text file
 		try {
 			br = new BufferedReader(new FileReader(IpAddressList));
 		} catch (FileNotFoundException e) {
@@ -63,13 +63,11 @@ public class ClientHeartBeatSender implements Runnable {
 		}
 
 		try {
-
 			while ((ipString = br.readLine()) != null) {
 				HeartBeat hb = new HeartBeat(ipString);
 				table.updateTable(hb);
-
 			}
-			br.close();// clase the file reader here
+			br.close();// close the file reader here
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -95,17 +93,19 @@ public class ClientHeartBeatSender implements Runnable {
 
 			// maintain
 			ArrayList<HeartBeat> sendList = table.maintain();
+			// Select members
 			List<String> listOfReceivers = table.selectMembers(sendList);
 			// send
 			for (String ip : listOfReceivers) {
-				// approx limit of UDP packet = 65000. And aprrox size of
-				// HeartBeat is 20
-				if (sendList.size() > 3250) {
+				// Splitting if larger than 20 modes
+				if (sendList.size() > 20) {
+					System.out.println("Packet too large. Splitting it!");
 					ArrayList<HeartBeat> splitSendList = new ArrayList<HeartBeat>();
-					// split
-					for (int i = 0; i < sendList.size() / 3250; i++) {
-						splitSendList.addAll(sendList.subList(i * 3250,
-								(i + 1) * 3250));
+					// split the list if the list is large
+					for (int i = 0; i < sendList.size() / 20; i++) {
+						splitSendList.addAll(sendList.subList(i * 20,
+								(i + 1) * 20));
+						System.out.println("Sending Split Packet:" + i + 1);
 						sendGossip(ip, splitSendList);
 					}
 				} else {
@@ -121,22 +121,24 @@ public class ClientHeartBeatSender implements Runnable {
 		try {
 			clientSocket = new DatagramSocket();
 			InetAddress ipAddress = InetAddress.getByName(ip);
-			byte[] sendData = new byte[1024];
+			byte[] sendData = new byte[PACKETSIZE];
 
 			ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
 			ObjectOutputStream objectStream = new ObjectOutputStream(byteStream);
 			objectStream.writeObject(sendList);
+			
 			sendData = byteStream.toByteArray();
-
+			System.out.println(sendData.length);
 			// Simulating packet loss rate: 1%, 5%, 15%, and 50%.
 			if (packetLoss) {
-				Random random = new Random();
-				int sendRate = random.nextInt(100);
-				if (sendRate < RATE) {
-					System.out.println("packet lost!!!");
-					return;
-				}
+				 Random random = new Random();
+				 int sendRate = random.nextInt(100);
+				 if (sendRate < RATE) {
+				 System.out.println("packet LOST!!!");
+				 return;
+				 }
 			}
+			System.out.println("no packet loss!!!");
 			// Send Gossip
 			DatagramPacket sendPacket = new DatagramPacket(sendData,
 					sendData.length, ipAddress, PORT);
