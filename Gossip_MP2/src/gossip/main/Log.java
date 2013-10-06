@@ -41,7 +41,7 @@ public class Log {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		String key = this.sessionName + " " + timeStamp +" "+ ip;
+		String key = this.sessionName + " " + timeStamp;
 		String value = message; 
 		try {
 			PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(this.filename, true)));
