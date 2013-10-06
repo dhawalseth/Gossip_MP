@@ -12,8 +12,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class HeartBeatTable {
 
-	public static long WAIT_TIME = 1000;
-	public static long CLEAN_UP = 1100;
+	public static long WAIT_TIME = 2000;
+	public static long CLEAN_UP = 2000;
 	public AtomicInteger numConnections = new AtomicInteger(1);
 
 	// The key will always be the ip address
