@@ -12,8 +12,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class HeartBeatTable {
 
-	public static long WAIT_TIME = 2000;
+	public static long  WAIT_TIME= 1000;
 	public static long CLEAN_UP = 2000;
+	public static long FAIL_TIME = 2000;
 	public AtomicInteger numConnections = new AtomicInteger(1);
 
 	// The key will always be the ip address
@@ -89,6 +90,7 @@ public class HeartBeatTable {
 					if(logger!=null){
 						logger.writeLogMessage("Unmarked for Failure "+hb.getIpAddress());
 					}
+					System.out.println("Unmarked for Failure "+hb.getIpAddress());
 				}
 			}
 
@@ -136,7 +138,7 @@ public class HeartBeatTable {
 		long currentTime = System.currentTimeMillis();
 		for (HeartBeat hb : collection) {
 			long localTime = this.localTimeMap.get(hb.getIpAddress());
-			if (currentTime - localTime >= WAIT_TIME) {
+			if (currentTime - localTime >= FAIL_TIME) {
 				if (!this.hasFailedMap.containsKey(hb.getIpAddress())) {
 					this.hasFailedMap.put(hb.getIpAddress(), hb);
 					if (logger != null) {
@@ -158,7 +160,7 @@ public class HeartBeatTable {
 		long currentTime = System.currentTimeMillis();
 		for (HeartBeat hb : collection) {
 			long localTime = this.localTimeMap.get(hb.getIpAddress());
-			if (currentTime - localTime >= WAIT_TIME + CLEAN_UP) {
+			if (currentTime - localTime >= FAIL_TIME + CLEAN_UP) {
 				this.removeHeartBeat(hb);
 				if (logger != null) {
 					logger.writeLogMessage("Cleanup" + hb.getIpAddress());

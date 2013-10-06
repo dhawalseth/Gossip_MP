@@ -43,9 +43,7 @@ public class ServerHeartBeatListener implements Runnable {
 				Object readObject = objectStream.readObject();
 				if (readObject instanceof ArrayList<?>) {
 					ArrayList<HeartBeat> hbList = (ArrayList<HeartBeat>) readObject;
-					System.out.println("Received list from: "
-							+ receivePacket.getAddress().getHostAddress()
-							+ ". List size: " + hbList.size());
+
 					// Update local list with received list
 					table.updateTable(hbList);
 				}

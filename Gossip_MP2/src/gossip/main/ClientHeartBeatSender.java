@@ -129,7 +129,6 @@ public class ClientHeartBeatSender implements Runnable {
 			objectStream.writeObject(sendList);
 			sendData = byteStream.toByteArray();
 
-			shouldDrop();
 			boolean shouldDrop = shouldDrop();
 			if(shouldDrop){
 				return;
