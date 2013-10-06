@@ -20,9 +20,10 @@ public class HeartBeat implements Serializable {
 	 * 
 	 * @param ID
 	 */
-	public HeartBeat(String ip) {
+	public HeartBeat(String ip, boolean setTimeStamp) {
 		this.ipAddress = ip;
 		heartBeatCounter = 0;
+		if(setTimeStamp)
 		this.setIncarnationTimeStamp();
 	}
 

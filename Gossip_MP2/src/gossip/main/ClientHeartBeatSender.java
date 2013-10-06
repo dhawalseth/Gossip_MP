@@ -45,7 +45,7 @@ public class ClientHeartBeatSender implements Runnable {
 
 	/**
 	 * This function reads a text file of ip addresses and adds them to the
-	 * heart beat table
+	 * heart beat table -they are the contact node(s)
 	 * 
 	 * @param table
 	 * @throws FileNotFoundException
@@ -65,7 +65,7 @@ public class ClientHeartBeatSender implements Runnable {
 
 		try {
 			while ((ipString = br.readLine()) != null) {
-				HeartBeat hb = new HeartBeat(ipString);
+				HeartBeat hb = new HeartBeat(ipString,false);
 				table.updateTable(hb);
 			}
 			br.close();// close the file reader here

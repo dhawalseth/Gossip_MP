@@ -74,10 +74,10 @@ public class HeartBeatTable {
 			this.heartBeatMap.put(key, value);
 			this.localTimeMap.put(key, System.currentTimeMillis());
 			if (logger != null) {
-				logger.writeLogMessage("ADD " + key + " incarnation# "
+				logger.writeLogMessage("ADD " + key + " incarnation time stamp "
 						+ hb.getTimeStamp());
 			}
-			System.out.println("Added ip: " + key + " incarnation#: "
+			System.out.println("Added ip " + key + " incarnation time stamp "
 					+ hb.getTimeStamp());
 		} else {
 			HeartBeat old = this.heartBeatMap.get(key);// merge new values
@@ -86,6 +86,9 @@ public class HeartBeatTable {
 				this.localTimeMap.put(key, System.currentTimeMillis());
 				if (this.hasFailedMap.containsKey(key)) {
 					this.hasFailedMap.remove(key);
+					if(logger!=null){
+						logger.writeLogMessage("Unmarked for Failure "+hb.getIpAddress());
+					}
 				}
 			}
 
@@ -140,7 +143,7 @@ public class HeartBeatTable {
 						logger.writeLogMessage("Marked Fail "
 								+ hb.getIpAddress());
 					}
-					System.out.println("Marked as fail: " + hb.getIpAddress());
+					System.out.println("Marked as fail " + hb.getIpAddress());
 				}
 			}
 		}
@@ -160,7 +163,7 @@ public class HeartBeatTable {
 				if (logger != null) {
 					logger.writeLogMessage("Cleanup" + hb.getIpAddress());
 				}
-				System.out.println("Cleaned up: " + hb.getIpAddress());
+				System.out.println("Cleaned up " + hb.getIpAddress());
 			}
 		}
 
@@ -230,8 +233,8 @@ public class HeartBeatTable {
 			return;
 		logger.writeLogMessage("---------------");
 		for (String ip : members) {
-			logger.writeLogMessage("Sending Gossip to: " + ip
-					+ ". Current List size: " + size);
+			logger.writeLogMessage("Sending Gossip to " + ip
+					+ ". Current List size " + size);
 		}
 		String[] messages = this.getTableStateAsString().split("\\r?\\n");
 		for (String message : messages) {

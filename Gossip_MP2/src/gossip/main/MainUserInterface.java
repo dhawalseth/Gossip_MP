@@ -65,7 +65,7 @@ public class MainUserInterface {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		String input = "";
 
-		System.out.println("Note: You can type 'leave' or 'join': ");
+		System.out.println("Note: You can type 'leave', 'join', 'session <session name>', 'drop <true/false> <percentage int>': ");
 		try {
 			input = br.readLine();
 
@@ -104,7 +104,7 @@ public class MainUserInterface {
 			return;
 		
 		int setNumConnections = 2;
-		if(setArguments[0].equals("session")){
+		if(setArguments[0].equals("connections")){
 			setNumConnections = Integer.parseInt(setArguments[1]);
 		}
 		this.table.setNumConnections(setNumConnections);
@@ -187,7 +187,7 @@ public class MainUserInterface {
 	 */
 	public void startClientAndServer() throws IOException {
 		HeartBeat own = new HeartBeat(InetAddress.getLocalHost()
-				.getHostAddress());
+				.getHostAddress(),true);
 		this.table = new HeartBeatTable(own, this.logger);
 
 		this.hbListener = new ServerHeartBeatListener(table);
