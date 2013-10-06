@@ -261,7 +261,7 @@ public class HeartBeatTable {
 	 * @param setNumConnections
 	 */
 	public void setNumConnections(int setNumConnections) {
-		this.setNumConnections(setNumConnections);
+		this.numConnections.set(setNumConnections);
 
 	}
 }
