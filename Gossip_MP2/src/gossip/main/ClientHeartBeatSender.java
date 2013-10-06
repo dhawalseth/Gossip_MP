@@ -134,7 +134,6 @@ public class ClientHeartBeatSender implements Runnable {
 			if(shouldDrop){
 				return;
 			}
-			System.out.println("no packet loss!!!");
 			// Send Gossip
 			DatagramPacket sendPacket = new DatagramPacket(sendData,
 					sendData.length, ipAddress, PORT);
@@ -159,7 +158,7 @@ public class ClientHeartBeatSender implements Runnable {
 			Random random = new Random();
 			int sendRate = random.nextInt(100);
 			if (sendRate <= percentPacketloss.get()) {
-				System.out.println("packet lost!!!");
+				System.out.println("packet dropped!!!");
 				return true;
 			}
 		}
@@ -173,6 +172,7 @@ public class ClientHeartBeatSender implements Runnable {
 	
 	
 	public void stopClient() {
+		System.out.println("Stopping Client");
 		this.exit.set(true);
 	}
 

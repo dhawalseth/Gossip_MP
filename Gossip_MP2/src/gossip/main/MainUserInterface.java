@@ -65,7 +65,8 @@ public class MainUserInterface {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		String input = "";
 
-		System.out.println("Note: You can type 'leave', 'join', 'session <session name>', 'drop <true/false> <percentage int>': ");
+		System.out
+				.println("Note: You can type 'leave', 'join', 'session <session name>', 'drop <true/false> <percentage int>': ");
 		try {
 			input = br.readLine();
 
@@ -100,11 +101,11 @@ public class MainUserInterface {
 	}
 
 	private void setNumConnections(String[] setArguments) {
-		if(setArguments.length!=2)
+		if (setArguments.length != 2)
 			return;
-		
+
 		int setNumConnections = 2;
-		if(setArguments[0].equals("connections")){
+		if (setArguments[0].equals("connections")) {
 			setNumConnections = Integer.parseInt(setArguments[1]);
 		}
 		this.table.setNumConnections(setNumConnections);
@@ -115,15 +116,15 @@ public class MainUserInterface {
 	 * 
 	 * @param setArguments
 	 */
-	private  void setSessionName(String[] setArguments) {
-		if(setArguments.length!=2)
+	private void setSessionName(String[] setArguments) {
+		if (setArguments.length != 2)
 			return;
-		
+
 		String sessionName = null;
-		if(setArguments[0].equals("session")){
+		if (setArguments[0].equals("session")) {
 			sessionName = setArguments[1];
 		}
-		if(sessionName!=null){
+		if (sessionName != null) {
 			this.logger.setSessionName(sessionName);
 		}
 
@@ -137,17 +138,17 @@ public class MainUserInterface {
 	private void setPacketLoss(String[] setArguments) {
 		if (setArguments.length < 2)
 			return;
-		
+
 		boolean shouldDropPackets = false;
 		int packetLossPercent = 0;
-		
-		if(setArguments[0].equals("drop")){
-			if(setArguments[1].equals("true") && setArguments.length==3){
+
+		if (setArguments[0].equals("drop")) {
+			if (setArguments[1].equals("true") && setArguments.length == 3) {
 				shouldDropPackets = true;
 				packetLossPercent = Integer.parseInt(setArguments[2]);
-				
+
 			} else {
-				shouldDropPackets  = false;
+				shouldDropPackets = false;
 			}
 		}
 		this.hbSender.setPacketLoss(shouldDropPackets, packetLossPercent);
@@ -157,6 +158,7 @@ public class MainUserInterface {
 	 * Connects this computer to the group
 	 */
 	private void connectToGroup() {
+		System.out.println("Connecting to the group");
 		this.setState(State.Connected);
 		this.table.reincarnate();
 		this.hbSender = new ClientHeartBeatSender(table);
@@ -168,6 +170,7 @@ public class MainUserInterface {
 	 * Disconnects this computer from the group
 	 */
 	private void disconnectFromGroup() {
+		System.out.println("Leaving Group");
 		this.setState(State.Disconnected);
 		this.hbSender.stopClient();
 		try {
@@ -187,7 +190,7 @@ public class MainUserInterface {
 	 */
 	public void startClientAndServer() throws IOException {
 		HeartBeat own = new HeartBeat(InetAddress.getLocalHost()
-				.getHostAddress(),true);
+				.getHostAddress(), true);
 		this.table = new HeartBeatTable(own, this.logger);
 
 		this.hbListener = new ServerHeartBeatListener(table);

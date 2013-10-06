@@ -12,7 +12,7 @@ public class HeartBeatTableTests {
 	
 	@Test
 	public void testIncreaseOwnHeartBeat() {
-		HeartBeat own = new HeartBeat("0");
+		HeartBeat own = new HeartBeat("0",true);
 		HeartBeatTable table = new HeartBeatTable(own,null);
 		table.maintain();
 		assertTrue(own.getHeartBeatCounter()==1);
@@ -20,7 +20,7 @@ public class HeartBeatTableTests {
 
 	@Test
 	public void testServerMergeAdd() {
-		HeartBeat own = new HeartBeat("0");
+		HeartBeat own = new HeartBeat("0",true);
 		HeartBeatTable table = new HeartBeatTable(own,null);
 
 		ArrayList<HeartBeat> currentTable = setupTable(own,table);
@@ -38,8 +38,8 @@ public class HeartBeatTableTests {
 	}
 
 	private ArrayList<HeartBeat> setupTable(HeartBeat own, HeartBeatTable table) {
-		HeartBeat hb1 = new HeartBeat("1");
-		HeartBeat hb2 = new HeartBeat("2");
+		HeartBeat hb1 = new HeartBeat("1",true);
+		HeartBeat hb2 = new HeartBeat("2",true);
 		
 		
 		ArrayList<HeartBeat> receivedList = new ArrayList<HeartBeat>();
@@ -54,14 +54,14 @@ public class HeartBeatTableTests {
 	}
 	
 	public void testServerMerge(){
-		HeartBeat own = new HeartBeat("0");
+		HeartBeat own = new HeartBeat("0",true);
 		HeartBeatTable table = new HeartBeatTable(own,null);
 		ArrayList<HeartBeat> currentTable = setupTable(own,table);
 	
 		table.updateTable(currentTable);
 		
-		HeartBeat hb1replacement = new HeartBeat("1");
-		HeartBeat hb2replacement = new HeartBeat("2");
+		HeartBeat hb1replacement = new HeartBeat("1",true);
+		HeartBeat hb2replacement = new HeartBeat("2",true);
 		hb1replacement.setAndCompareHeartBeatCounter(1);
 		hb2replacement.setAndCompareHeartBeatCounter(2);
 		
@@ -87,7 +87,7 @@ public class HeartBeatTableTests {
 	
 	@Test
 	public void testClientUpdateNoFailures() throws InterruptedException{
-		HeartBeat own = new HeartBeat("0");
+		HeartBeat own = new HeartBeat("0",true);
 		HeartBeatTable table = new HeartBeatTable(own,null);
 		ArrayList<HeartBeat> currentTable = setupTable(own,table);
 		table.updateTable(currentTable);
@@ -107,7 +107,7 @@ public class HeartBeatTableTests {
 
 	@Test
 	public void testClientUpdateWithFailures() throws InterruptedException{
-		HeartBeat own = new HeartBeat("0");
+		HeartBeat own = new HeartBeat("0",true);
 		HeartBeatTable table = new HeartBeatTable(own,null);
 		ArrayList<HeartBeat> currentTable = setupTable(own,table);
 		table.updateTable(currentTable);

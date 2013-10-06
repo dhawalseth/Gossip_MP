@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class HeartBeatTable {
 
-	public final static long WAIT_TIME = 2000;
+	public final static long WAIT_TIME = 1000;
 	public final static long CLEAN_UP = 1000;
 	public AtomicInteger numConnections = new AtomicInteger(2);
 
@@ -38,9 +38,9 @@ public class HeartBeatTable {
 
 	private void setupMaps(HeartBeat own) {
 		this.heartBeatMap = new ConcurrentHashMap<String, HeartBeat>();
-
 		this.localTimeMap = new ConcurrentHashMap<String, Long>();
 		this.hasFailedMap = new ConcurrentHashMap<String, HeartBeat>();
+		
 		this.heartBeatMap.put(own.getIpAddress(), own);
 		this.localTimeMap.put(own.getIpAddress(), System.currentTimeMillis());
 	}

@@ -15,6 +15,7 @@ public class ServerHeartBeatListener implements Runnable {
 
 	public static final int PORT = 5989;
 	private HeartBeatTable table;
+	public static final int PACKETSIZE = 1024;
 
 	/**
 	 * Constructor
@@ -29,7 +30,7 @@ public class ServerHeartBeatListener implements Runnable {
 		try {
 			serverSocket = new DatagramSocket(PORT);
 
-			byte[] receiveData = new byte[1024];
+			byte[] receiveData = new byte[PACKETSIZE];
 
 			while (true) {
 				DatagramPacket receivePacket = new DatagramPacket(receiveData,
