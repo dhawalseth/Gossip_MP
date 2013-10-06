@@ -13,6 +13,7 @@ public class HeartBeat implements Serializable {
 	private String ipAddress;
 	private long heartBeatCounter;
 	private Timestamp timesStamp;
+	
 
 	/**
 	 * Constructor
@@ -22,6 +23,7 @@ public class HeartBeat implements Serializable {
 	public HeartBeat(String ip) {
 		this.ipAddress = ip;
 		heartBeatCounter = 0;
+		this.setIncarnationTimeStamp();
 	}
 
 	/**
