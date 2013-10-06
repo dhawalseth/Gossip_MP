@@ -28,7 +28,6 @@ public class ClientHeartBeatSender implements Runnable {
 	public AtomicInteger percentPacketloss = new AtomicInteger(0);
 	// Change this to true for enabling packetLoss
 	public AtomicBoolean packetLoss = new AtomicBoolean(false);
-	public static final boolean packetLoss = true;
 	public static final int PACKETSIZE = 1024;
 	public HeartBeatTable table;
 	private AtomicBoolean exit = new AtomicBoolean(false);
