@@ -91,7 +91,7 @@ public class HeartBeatTableTests {
 		HeartBeatTable table = new HeartBeatTable(own,null);
 		ArrayList<HeartBeat> currentTable = setupTable(own,table);
 		table.updateTable(currentTable);
-		Thread.sleep(HeartBeatTable.WAIT_TIME/2);
+		Thread.sleep(HeartBeatTable.FAIL_TIME/2);
 		ArrayList<HeartBeat> testList = table.maintain();
 		
 		for(HeartBeat hb : testList){
@@ -111,7 +111,7 @@ public class HeartBeatTableTests {
 		HeartBeatTable table = new HeartBeatTable(own,null);
 		ArrayList<HeartBeat> currentTable = setupTable(own,table);
 		table.updateTable(currentTable);
-		Thread.sleep(HeartBeatTable.WAIT_TIME);
+		Thread.sleep(HeartBeatTable.FAIL_TIME);
 		
 		
 		//Failures

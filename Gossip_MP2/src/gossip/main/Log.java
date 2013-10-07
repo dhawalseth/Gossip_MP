@@ -5,8 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.sql.Timestamp;
 
 /**
@@ -34,13 +32,6 @@ public class Log {
 	 */
 	public synchronized void writeLogMessage(String message){
 		Timestamp timeStamp= new Timestamp(System.currentTimeMillis());
-		String ip = null;
-		try {
-			ip = InetAddress.getLocalHost().getHostAddress();
-		} catch (UnknownHostException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
 		String key = this.sessionName + " " + timeStamp;
 		String value = message; 
 		try {
@@ -55,7 +46,10 @@ public class Log {
 		}
 	
 	}
-
+	/**
+	 * Session name is part of the key in the log file
+	 * @param sessionName
+	 */
 	public void setSessionName(String sessionName) {
 		this.sessionName = sessionName;
 		

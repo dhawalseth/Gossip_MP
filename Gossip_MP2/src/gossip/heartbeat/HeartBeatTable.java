@@ -5,23 +5,28 @@ import gossip.main.Log;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-
+/**
+ * Keeps track of membership list logic
+ * @author etubil2
+ *
+ */
 public class HeartBeatTable {
 
 	public static long  WAIT_TIME= 1000;
-	public static long CLEAN_UP = 2000;
-	public static long FAIL_TIME = 2000;
+	public static long CLEAN_UP = 1250;
+	public static long FAIL_TIME = 1250;
 	public AtomicInteger numConnections = new AtomicInteger(1);
 
 	// The key will always be the ip address
 	ConcurrentHashMap<String, HeartBeat> heartBeatMap;
 	ConcurrentHashMap<String, Long> localTimeMap;
 	ConcurrentHashMap<String, HeartBeat> hasFailedMap;
-	Log logger;
+	public Log logger;
 	public HeartBeat own;
 
 	/**
@@ -37,9 +42,12 @@ public class HeartBeatTable {
 
 	}
 
+	/**
+	 * setup this class
+	 * @param own
+	 */
 	private void setupMaps(HeartBeat own) {
 		this.heartBeatMap = new ConcurrentHashMap<String, HeartBeat>();
-
 		this.localTimeMap = new ConcurrentHashMap<String, Long>();
 		this.hasFailedMap = new ConcurrentHashMap<String, HeartBeat>();
 		this.heartBeatMap.put(own.getIpAddress(), own);
@@ -57,6 +65,7 @@ public class HeartBeatTable {
 		}
 	}
 
+
 	/**
 	 * updates a single heart beat
 	 * 
@@ -72,29 +81,47 @@ public class HeartBeatTable {
 		String key = hb.getIpAddress();
 		HeartBeat value = hb;
 		if (!this.heartBeatMap.containsKey(key)) {// check if new node
-			this.heartBeatMap.put(key, value);
-			this.localTimeMap.put(key, System.currentTimeMillis());
-			if (logger != null) {
-				logger.writeLogMessage("ADD " + key + " incarnation time stamp "
-						+ hb.getTimeStamp());
-			}
-			System.out.println("Added ip " + key + " incarnation time stamp "
-					+ hb.getTimeStamp());
+			addNewNodes(hb, key, value);
 		} else {
-			HeartBeat old = this.heartBeatMap.get(key);// merge new values
-			if (old.getHeartBeatCounter() < value.getHeartBeatCounter()) {
-				this.heartBeatMap.put(key, value);
-				this.localTimeMap.put(key, System.currentTimeMillis());
-				if (this.hasFailedMap.containsKey(key)) {
-					this.hasFailedMap.remove(key);
-					if(logger!=null){
-						logger.writeLogMessage("Unmarked for Failure "+hb.getIpAddress());
-					}
-					System.out.println("Unmarked for Failure "+hb.getIpAddress());
-				}
-			}
+			mergeNewNodes(hb, key, value);
 
 		}
+	}
+	/**
+	 * Compare new nodes and see if the local hb count needs to be updated
+	 * @param hb
+	 * @param key
+	 * @param value
+	 */
+	private void mergeNewNodes(HeartBeat hb, String key, HeartBeat value) {
+		HeartBeat old = this.heartBeatMap.get(key);// merge new values
+		if (old.getHeartBeatCounter() < value.getHeartBeatCounter()) {
+			this.heartBeatMap.put(key, value);
+			this.localTimeMap.put(key, System.currentTimeMillis());
+			if (this.hasFailedMap.containsKey(key)) {
+				this.hasFailedMap.remove(key);
+				if(logger!=null){
+					logger.writeLogMessage("Unmarked for Failure "+hb.getIpAddress());
+				}
+			}
+		}
+	}
+
+	/**
+	 * Add new nodes to the maps
+	 * @param hb
+	 * @param key
+	 * @param value
+	 */
+	private void addNewNodes(HeartBeat hb, String key, HeartBeat value) {
+		this.heartBeatMap.put(key, value);
+		this.localTimeMap.put(key, System.currentTimeMillis());
+		if (logger != null) {
+			logger.writeLogMessage("!!!!!!!JOIN " + key + " incarnation time stamp "
+					+ hb.getTimeStamp()+"!!!!!!!!!!");
+		}
+		System.out.println("!!!!!!!JOIN " + key + " incarnation time stamp "
+				+ hb.getTimeStamp()+"!!!!!!!");
 	}
 
 	/**
@@ -145,7 +172,6 @@ public class HeartBeatTable {
 						logger.writeLogMessage("Marked Fail "
 								+ hb.getIpAddress());
 					}
-					System.out.println("Marked as fail " + hb.getIpAddress());
 				}
 			}
 		}
@@ -156,16 +182,17 @@ public class HeartBeatTable {
 	 * Cleans up heart beats from the table that are marked for falure
 	 */
 	private void cleanUp() {
-		Collection<HeartBeat> collection = this.hasFailedMap.values();
+		
+		Collection<HeartBeat> collection = Collections.synchronizedCollection(this.hasFailedMap.values());
 		long currentTime = System.currentTimeMillis();
 		for (HeartBeat hb : collection) {
 			long localTime = this.localTimeMap.get(hb.getIpAddress());
 			if (currentTime - localTime >= FAIL_TIME + CLEAN_UP) {
 				this.removeHeartBeat(hb);
 				if (logger != null) {
-					logger.writeLogMessage("Cleanup" + hb.getIpAddress());
+					logger.writeLogMessage("!!!!REMOVED" + hb.getIpAddress()+"!!!!!!!!!!");
 				}
-				System.out.println("Cleaned up " + hb.getIpAddress());
+				System.out.println("!!!!!REMOVED " + hb.getIpAddress()+"!!!!!!!!!!");
 			}
 		}
 
@@ -212,7 +239,12 @@ public class HeartBeatTable {
 	public List<String> selectMembers(ArrayList<HeartBeat> sendList) {
 		List<String> randomMembers = new ArrayList<String>();
 		Random randomGenerator = new Random();
-
+		int size = sendList.size();
+		if(size%2==0){
+		this.numConnections.set(size/2);
+		} else {
+			this.numConnections.set((size+1)/2);
+		}
 		while (randomMembers.size() < numConnections.get()
 				&& randomMembers.size() < sendList.size() - 1) {
 			int randIndex = randomGenerator.nextInt(sendList.size());
@@ -230,6 +262,11 @@ public class HeartBeatTable {
 		return randomMembers;
 	}
 
+	/**
+	 * Writes the membership list to the log
+	 * @param members
+	 * @param size
+	 */
 	private void writeLog(List<String> members, int size) {
 		if (logger == null)
 			return;
@@ -244,6 +281,10 @@ public class HeartBeatTable {
 		}
 	}
 
+	/**
+	 * Gets the membership list as a string
+	 * @return
+	 */
 	public String getTableStateAsString() {
 		String retVal = "(ip,heart beat count,incarnationTimeStamp#)\n";
 		ArrayList<HeartBeat> hbTable = this.getCurrentHeartBeatTable();
@@ -266,4 +307,5 @@ public class HeartBeatTable {
 		this.numConnections.set(setNumConnections);
 
 	}
+	
 }

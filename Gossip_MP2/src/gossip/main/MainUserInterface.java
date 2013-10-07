@@ -11,24 +11,31 @@ import java.net.UnknownHostException;
 
 public class MainUserInterface {
 	public HeartBeatTable table;
-	private ClientHeartBeatSender hbSender;
+	protected ClientHeartBeatSender hbSender;
 	private ServerHeartBeatListener hbListener;
 	Log logger;
 	Thread server;
 	Thread client;
 	public final static String LEAVE = "leave";
 	public final static String JOIN = "join";
-
+	private boolean isContactNode = false;
 	public enum State {
 		Connected, Disconnected
 	};
 
 	private State currentState;
 
-	public MainUserInterface() {
+	/**
+	 * Constructor
+	 * @param sessionName - key for log file
+	 */
+	public MainUserInterface(String sessionName) {
 		try {
 			this.logger = new Log("/tmp/machine."
 					+ InetAddress.getLocalHost().getHostAddress() + ".log");
+			if(sessionName!=null){
+				logger.setSessionName(sessionName);
+			}
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 
@@ -66,7 +73,7 @@ public class MainUserInterface {
 		String input = "";
 
 		System.out
-				.println("Note: You can type 'leave', 'join', 'session <session name>', 'drop <true/false> <percentage int>': ");
+				.println("Note: You can type 'leave', 'join', 'session <session name>', 'drop <true/false> <percentage int>', '<contact true/false>: ");
 		try {
 			input = br.readLine();
 
@@ -97,7 +104,25 @@ public class MainUserInterface {
 			setPacketLoss(setArguments);
 			setSessionName(setArguments);
 			setNumConnections(setArguments);
+			setContactNode(setArguments);
 		}
+	}
+
+	/**
+	 * Sets if this is contact node - it should not throw its list away
+	 * @param setArguments
+	 */
+	private void setContactNode(String[] setArguments) {
+		if(setArguments.length!=2)
+			return;
+		if(setArguments[0].equals("contact")){
+			if(setArguments[1].equals("true")){
+				this.isContactNode = true;
+			} else {
+				this.isContactNode = false;
+			}
+		}
+		
 	}
 
 	private void setNumConnections(String[] setArguments) {
@@ -160,6 +185,7 @@ public class MainUserInterface {
 	private void connectToGroup() {
 		System.out.println("Connecting to the group");
 		this.setState(State.Connected);
+		if(!this.isContactNode)
 		this.table.reincarnate();
 		this.hbSender = new ClientHeartBeatSender(table);
 		this.client = new Thread(this.hbSender);
@@ -208,8 +234,9 @@ public class MainUserInterface {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		String sessionName = args.length>=1?args[0]:null;
 
-		MainUserInterface mainUI = new MainUserInterface();
+		MainUserInterface mainUI = new MainUserInterface(sessionName);
 		try {
 			mainUI.startClientAndServer();
 

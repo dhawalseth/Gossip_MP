@@ -2,7 +2,11 @@ package gossip.heartbeat;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
-
+/**
+ * Heart Beat Class -this is sent over the network
+ * @author etubil2
+ *
+ */
 public class HeartBeat implements Serializable {
 
 	/**
@@ -32,7 +36,7 @@ public class HeartBeat implements Serializable {
 	 * 
 	 * @return
 	 */
-	public long getHeartBeatCounter() {
+	public synchronized long getHeartBeatCounter() {
 		return heartBeatCounter;
 	}
 
@@ -41,7 +45,7 @@ public class HeartBeat implements Serializable {
 	 * 
 	 * @return
 	 */
-	public String getIpAddress() {
+	public synchronized String getIpAddress() {
 		return ipAddress;
 	}
 
@@ -49,8 +53,9 @@ public class HeartBeat implements Serializable {
 	 * Updates the heart beat counter only if the other heart beat is greater
 	 * 
 	 * @param otherHeartBeat
+	 * @return 
 	 */
-	public void setAndCompareHeartBeatCounter(long otherHeartBeat) {
+	public synchronized void setAndCompareHeartBeatCounter(long otherHeartBeat) {
 		if (otherHeartBeat > this.heartBeatCounter) {
 			this.heartBeatCounter = otherHeartBeat;
 		}
@@ -61,7 +66,7 @@ public class HeartBeat implements Serializable {
 	 * 
 	 * @return incarnation number
 	 */
-	public Timestamp setIncarnationTimeStamp() {
+	public synchronized Timestamp setIncarnationTimeStamp() {
 		return this.timesStamp = new Timestamp(System.currentTimeMillis());
 	}
 
@@ -70,7 +75,7 @@ public class HeartBeat implements Serializable {
 	 * 
 	 * @return
 	 */
-	public Timestamp getTimeStamp(){
+	public synchronized Timestamp getTimeStamp(){
 		return this.timesStamp;
 	}
 }

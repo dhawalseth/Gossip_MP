@@ -25,14 +25,19 @@ public class ClientHeartBeatSender implements Runnable {
 	private static final String IpAddressList = "/tmp/IpAddressList.txt";
 	public static final int PORT = 5989;
 	// Packet loss rate: 1%, 5%, 15%, and 50%.
+<<<<<<< HEAD
 	public AtomicInteger percentPacketloss = new AtomicInteger(0);
 	// Change this to true for enabling packetLoss
 	public AtomicBoolean packetLoss = new AtomicBoolean(false);
+=======
+	public static final int RATE = 5;
+	// Change this to true for enabling packetLoss
+	public static final boolean packetLoss = true;
 	public static final int PACKETSIZE = 1024;
+>>>>>>> c07fbf4d8e16b8dc16160ac797a41664ef99ce3c
 	public HeartBeatTable table;
 	private AtomicBoolean exit = new AtomicBoolean(false);
-	private long totalNumSentBytes = 0;
-	
+
 	/**
 	 * Constructor
 	 * 
@@ -46,7 +51,7 @@ public class ClientHeartBeatSender implements Runnable {
 
 	/**
 	 * This function reads a text file of ip addresses and adds them to the
-	 * heart beat table -they are the contact node(s)
+	 * heart beat table
 	 * 
 	 * @param table
 	 * @throws FileNotFoundException
@@ -66,7 +71,7 @@ public class ClientHeartBeatSender implements Runnable {
 
 		try {
 			while ((ipString = br.readLine()) != null) {
-				HeartBeat hb = new HeartBeat(ipString,false);
+				HeartBeat hb = new HeartBeat(ipString);
 				table.updateTable(hb);
 			}
 			br.close();// close the file reader here
@@ -76,10 +81,7 @@ public class ClientHeartBeatSender implements Runnable {
 		}
 
 	}
-	/**
-	 * Main method to start gossiping to people
-	 * @throws UnknownHostException
-	 */
+
 	public void startGossip() throws UnknownHostException {
 		while (true) {
 			try {
@@ -120,11 +122,6 @@ public class ClientHeartBeatSender implements Runnable {
 		}
 	}
 
-	/**
-	 * Sends its membership list to an ip
-	 * @param ip
-	 * @param sendList
-	 */
 	public void sendGossip(String ip, ArrayList<HeartBeat> sendList) {
 
 		DatagramSocket clientSocket;
@@ -136,19 +133,34 @@ public class ClientHeartBeatSender implements Runnable {
 			ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
 			ObjectOutputStream objectStream = new ObjectOutputStream(byteStream);
 			objectStream.writeObject(sendList);
+			
 			sendData = byteStream.toByteArray();
+<<<<<<< HEAD
 
+			shouldDrop();
 			boolean shouldDrop = shouldDrop();
 			if(shouldDrop){
 				return;
 			}
+			
+=======
+			System.out.println(sendData.length);
+			// Simulating packet loss rate: 1%, 5%, 15%, and 50%.
+			if (packetLoss) {
+				 Random random = new Random();
+				 int sendRate = random.nextInt(100);
+				 if (sendRate < RATE) {
+				 System.out.println("packet LOST!!!");
+				 return;
+				 }
+			}
+			System.out.println("no packet loss!!!");
+>>>>>>> c07fbf4d8e16b8dc16160ac797a41664ef99ce3c
 			// Send Gossip
 			DatagramPacket sendPacket = new DatagramPacket(sendData,
 					sendData.length, ipAddress, PORT);
 			clientSocket.send(sendPacket);
-			this.totalNumSentBytes+=sendPacket.getLength()+5;
-			table.logger.writeLogMessage("Bytes sent till now: "+this.totalNumSentBytes);
-			
+
 		} catch (SocketException e) {
 			e.printStackTrace();
 
@@ -161,44 +173,30 @@ public class ClientHeartBeatSender implements Runnable {
 		}
 
 	}
-	/**
-	 * Calculates if we should drop the drop, given user input for drop percent
-	 * @return
-	 */
+
 	private boolean shouldDrop() {
 		// Simulating packet loss rate: 1%, 5%, 15%, and 50%.
 		if (packetLoss.get()) {
 			Random random = new Random();
 			int sendRate = random.nextInt(100);
 			if (sendRate <= percentPacketloss.get()) {
-				System.out.println("packet dropped!!!");
+				System.out.println("packet lost!!!");
 				return true;
 			}
 		}
 		return false;
 	}
 
-	/**
-	 * Sets the packet loss percent
-	 * @param setPacketLoss
-	 * @param packetLossPercent
-	 */
 	public void setPacketLoss(boolean setPacketLoss, int packetLossPercent){
 		this.packetLoss.set(setPacketLoss);
 		this.percentPacketloss.set(packetLossPercent);
 	}
 	
-	/**
-	 * stops this thread
-	 */
+	
 	public void stopClient() {
-		System.out.println("Stopping Client");
 		this.exit.set(true);
 	}
 
-	/**
-	 * Runnable run
-	 */
 	public void run() {
 		try {
 			startGossip();

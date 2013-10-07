@@ -24,6 +24,9 @@ public class ServerHeartBeatListener implements Runnable {
 		this.table = table;
 	}
 
+	/**
+	 * Server waits for gossip and updates lists
+	 */
 	@SuppressWarnings("unchecked")
 	public void receiveGossip() {
 		DatagramSocket serverSocket;
