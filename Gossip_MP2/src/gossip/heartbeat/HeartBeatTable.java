@@ -222,9 +222,27 @@ public class HeartBeatTable {
 		return this.heartBeatMap.size();
 	}
 
-	public void reincarnate() {
+	/**
+	 * Starts a reincarnation of this node, sets up a new timestamp
+	 * @param isContactNode
+	 */
+	public void reincarnate(boolean isContactNode) {
 		own.setIncarnationTimeStamp();
+		if(!isContactNode)
 		this.setupMaps(own);
+		else
+			this.restoreTable();
+	}
+
+	/**
+	 * restores the old table if this is a contact node
+	 */
+	private void restoreTable() {
+		Collection<HeartBeat> collection = this.heartBeatMap.values();
+		for (HeartBeat hb : collection) {
+			this.localTimeMap.put(hb.getIpAddress(), System.currentTimeMillis());
+		}
+		
 	}
 
 	/**

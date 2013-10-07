@@ -117,8 +117,10 @@ public class MainUserInterface {
 			return;
 		if(setArguments[0].equals("contact")){
 			if(setArguments[1].equals("true")){
+				System.out.println("This is a contact node!");
 				this.isContactNode = true;
 			} else {
+				System.out.println("This is not a contact node...");
 				this.isContactNode = false;
 			}
 		}
@@ -185,8 +187,8 @@ public class MainUserInterface {
 	private void connectToGroup() {
 		System.out.println("Connecting to the group");
 		this.setState(State.Connected);
-		if(!this.isContactNode)
-		this.table.reincarnate();
+			this.table.reincarnate(this.isContactNode);
+		
 		this.hbSender = new ClientHeartBeatSender(table);
 		this.client = new Thread(this.hbSender);
 		this.client.start();
@@ -199,6 +201,7 @@ public class MainUserInterface {
 		System.out.println("Leaving Group");
 		this.setState(State.Disconnected);
 		this.hbSender.stopClient();
+		server.interrupt();
 		try {
 			this.client.join();
 
